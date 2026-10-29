@@ -1,1 +1,320 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0d18">
+<title>Everstrong Fitness | Build Your Strength</title>
+<meta name="description" content="Personal fitness training in Siliguri and online across India. Build strength, confidence and sustainable habits with Everstrong Fitness.">
+
+<style>
+:root{
+  --bg:#090c16;--panel:#111727;--text:#f4f6ff;
+  --muted:#a6afc5;--accent:#7192ff;--purple:#a77bff;
+  --border:#252d42;--header:rgba(9,12,22,.91);
+}
+body.light{
+  --bg:#f5f7ff;--panel:#fff;--text:#14192b;
+  --muted:#58627a;--accent:#3f60d9;--purple:#8052d8;
+  --border:#dfe4f1;--header:rgba(245,247,255,.93);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:var(--bg);color:var(--text);
+font-family:Arial,Helvetica,sans-serif;line-height:1.65;transition:.2s}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit}
+button,a{ -webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+.container{width:min(1120px,91%);margin:auto}
+header{position:sticky;top:0;z-index:10;background:var(--header);
+backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav{min-height:74px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.brand{font-size:19px;font-weight:900;letter-spacing:-.6px}
+.brand span{color:var(--accent)}
+.navlinks{display:flex;align-items:center;gap:19px;flex-wrap:wrap}
+.navlinks a{font-size:13px;color:var(--muted)}
+.navlinks a:hover{color:var(--accent)}
+.theme{border:1px solid var(--border);background:var(--panel);color:var(--text);
+border-radius:12px;padding:9px 12px}
+.hero{padding:76px 0 65px;display:grid;grid-template-columns:1.05fr .95fr;
+align-items:center;gap:44px}
+.eyebrow{color:var(--accent);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+h1{font-size:clamp(42px,6vw,72px);line-height:1.04;letter-spacing:-2.7px;margin:18px 0}
+h1 span,.gradient{background:linear-gradient(100deg,var(--accent),var(--purple));
+-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:clamp(27px,4vw,40px);line-height:1.15;letter-spacing:-1px;margin:10px 0 16px}
+h3{margin:8px 0}
+p{color:var(--muted)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:27px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+border:1px solid var(--border);border-radius:12px;padding:12px 18px;
+font-weight:750;font-size:14px;transition:transform .2s}
+.btn:hover{transform:translateY(-2px)}
+.primary{background:linear-gradient(110deg,var(--accent),var(--purple));
+border-color:transparent;color:white}
+.secondary{background:var(--panel);color:var(--text)}
+.heroimage{height:430px;border-radius:26px;overflow:hidden;position:relative;
+border:1px solid var(--border);background:var(--panel)}
+.heroimage img{width:100%;height:100%;object-fit:cover}
+.image-label{position:absolute;bottom:16px;left:16px;right:16px;
+background:rgba(8,12,24,.82);padding:14px 17px;border-radius:15px;color:white}
+.image-label small{color:#c6d0e9}
+section{padding:65px 0}
+.section-head{max-width:650px;margin-bottom:28px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:19px;padding:23px}
+.iconbox{width:45px;height:45px;display:grid;place-items:center;border-radius:13px;
+background:rgba(113,146,255,.13);font-size:22px}
+.card p{font-size:14px}
+.pill{display:inline-block;border:1px solid var(--border);padding:5px 10px;
+border-radius:30px;color:var(--muted);font-size:12px;margin:4px 4px 0 0}
+.about{display:grid;grid-template-columns:.8fr 1.2fr;gap:30px;align-items:center}
+.aboutimage{height:350px;border-radius:22px;overflow:hidden;background:var(--panel)}
+.aboutimage img{width:100%;height:100%;object-fit:cover}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gallery img{width:100%;height:230px;object-fit:cover;border-radius:16px;
+border:1px solid var(--border);background:var(--panel)}
+.callout{background:linear-gradient(120deg,rgba(113,146,255,.15),rgba(167,123,255,.1));
+border:1px solid var(--border);border-radius:24px;padding:32px}
+footer{border-top:1px solid var(--border);padding:28px 0;margin-top:35px}
+.footerrow{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.small{font-size:12px;color:var(--muted)}
+.page{display:none;min-height:65vh;padding:55px 0}
+.page.active{display:block}
+.formbox{max-width:700px;margin:auto;background:var(--panel);
+border:1px solid var(--border);border-radius:22px;padding:clamp(20px,5vw,36px)}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:13px;font-weight:700}
+.field input,.field select,.field textarea{width:100%;padding:12px;
+border-radius:10px;border:1px solid var(--border);background:var(--bg);
+color:var(--text);min-width:0}
+.notice{border:1px solid var(--border);padding:13px;border-radius:12px;
+font-size:13px;color:var(--muted);margin:17px 0}
+[hidden]{display:none!important}
+@media(max-width:760px){
+ .nav{padding:12px 0;align-items:flex-start}
+ .navlinks{gap:10px;justify-content:flex-end;max-width:65%}
+ .navlinks a{font-size:12px}
+ .hero{grid-template-columns:1fr;padding-top:48px;gap:25px}
+ .heroimage{height:330px}
+ .cards{grid-template-columns:1fr}
+ .about{grid-template-columns:1fr}
+ .aboutimage{height:270px}
+ .gallery{grid-template-columns:1fr 1fr}
+ .gallery img{height:175px}
+}
+@media(max-width:430px){
+ .brand{font-size:16px}
+ .navlinks{gap:8px}
+ .navlinks a{font-size:11px}
+ .theme{padding:7px}
+ .formgrid{grid-template-columns:1fr}
+ .field.full{grid-column:auto}
+ h1{letter-spacing:-1.7px}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="container nav">
+  <a class="brand" href="#home" onclick="showPage('home')">EVER<span>STRONG</span></a>
+  <nav class="navlinks" aria-label="Main navigation">
+   <a href="#home" onclick="showPage('home')">Home</a>
+   <a href="#about" onclick="showPage('home','about')">About</a>
+   <a href="#services" onclick="showPage('home','services')">Services</a>
+   <a href="#gallery" onclick="showPage('home','gallery')">Gallery</a>
+   <a href="#booking" onclick="showPage('booking')">Book</a>
+   <button class="theme" id="themeBtn" type="button" aria-label="Switch colour theme">☼</button>
+  </nav>
+ </div>
+</header>
+
+<main>
+<div class="page active" id="home">
+ <div class="container hero">
+  <div>
+   <div class="eyebrow">Your journey. Your strength.</div>
+   <h1>Become stronger.<br><span>Live better.</span></h1>
+   <p>Personal fitness coaching built around your goals, your lifestyle and steady progress. Start where you are. Build from there.</p>
+   <div class="actions">
+    <a class="btn primary" href="#booking" onclick="showPage('booking')">Explore Training ↗</a>
+    <a class="btn secondary" href="#about" onclick="showPage('home','about')">Meet Your Trainer</a>
+   </div>
+   <p class="small">In-person training in Siliguri · Online coaching across India</p>
+  </div>
+  <div class="heroimage">
+   <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1000&q=85"
+   alt="Modern fitness training gym" fetchpriority="high">
+   <div class="image-label"><strong>EVERSTRONG FITNESS</strong><br><small>Strength • Mobility • Sustainable habits</small></div>
+  </div>
+ </div>
+
+ <section id="services">
+  <div class="container">
+   <div class="section-head">
+    <div class="eyebrow">Training that fits your life</div>
+    <h2>Find your way to <span class="gradient">stronger.</span></h2>
+    <p>Choose a training method that works for you. Your preferred schedule is a request, and the trainer will confirm it with you.</p>
+   </div>
+   <div class="cards">
+    <article class="card"><div class="iconbox">⌂</div><h3>Home-visit training</h3>
+     <p>Personal training at your home or another agreed location within Siliguri. Additional visit charges may apply and will be discussed before confirmation.</p>
+     <a class="btn secondary" href="#booking" onclick="showPage('booking')">Enquire ↗</a>
+    </article>
+    <article class="card"><div class="iconbox">⚡</div><h3>Train with your coach</h3>
+     <p>Visit the trainer’s residence or a designated training location in Siliguri. Exact location and arrangements will be shared directly.</p>
+     <a class="btn secondary" href="#booking" onclick="showPage('booking')">Enquire ↗</a>
+    </article>
+    <article class="card"><div class="iconbox">◎</div><h3>Online coaching</h3>
+     <p>Available across India through live video sessions or personalised workout plans, depending on your needs and agreed programme.</p>
+     <a class="btn secondary" href="#booking" onclick="showPage('booking')">Enquire ↗</a>
+    </article>
+   </div>
+  </div>
+ </section>
+
+ <section id="about">
+  <div class="container about">
+   <div class="aboutimage">
+    <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=85"
+    alt="Strength training in a gym" loading="lazy">
+   </div>
+   <div>
+    <div class="eyebrow">Meet your trainer</div>
+    <h2>Brajagopal Kha</h2>
+    <h3>Personal Fitness Trainer</h3>
+    <p>A fitness trainer passionate about helping people build strength and confidence. He focuses on simple, sustainable workouts tailored to each client. His approach blends strength training, mobility, and practical nutrition. He prioritizes proper form and steady progress over quick fixes. His goal is to make fitness feel achievable and enjoyable.</p>
+    <span class="pill">Strength training</span><span class="pill">Mobility</span>
+    <span class="pill">Home workouts</span><span class="pill">Online coaching</span>
+   </div>
+  </div>
+ </section>
+
+ <section id="gallery">
+  <div class="container">
+   <div class="section-head"><div class="eyebrow">The training mindset</div>
+    <h2>Make progress, <span class="gradient">your way.</span></h2>
+    <p>Fitness is built through consistent effort, good technique and habits you can maintain.</p>
+   </div>
+   <div class="gallery">
+    <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80" alt="Gym training space" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80" alt="Strength workout" loading="lazy">
+    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&q=80" alt="Fitness training session" loading="lazy">
+   </div>
+   <p class="small">Illustrative fitness imagery. Actual client photos will only be added with permission.</p>
+  </div>
+ </section>
+
+ <section id="location">
+  <div class="container">
+   <div class="callout">
+    <div class="eyebrow">Where we operate</div>
+    <h2>Siliguri and all across India.</h2>
+    <p>In-person services are limited to Siliguri, West Bengal. Online training is available throughout India. The precise training location will be confirmed directly with the trainer.</p>
+    <a class="btn secondary" href="https://www.google.com/maps/search/?api=1&query=Siliguri%2C+West+Bengal%2C+India" target="_blank" rel="noopener">Explore Siliguri on Maps ↗</a>
+   </div>
+  </div>
+ </section>
+
+ <section>
+  <div class="container">
+   <div class="callout">
+    <div class="eyebrow">Your next step</div>
+    <h2>Ready to get started?</h2>
+    <p>Send your preferred training mode and schedule. The trainer will discuss the available options, pricing and confirmation with you.</p>
+    <div class="actions">
+     <a class="btn primary" href="#booking" onclick="showPage('booking')">Request a Session</a>
+     <a class="btn secondary" href="#register" onclick="showPage('register')">Registration</a>
+    </div>
+   </div>
+  </div>
+ </section>
+</div>
+
+<div class="page" id="booking">
+ <div class="container">
+  <div class="formbox">
+   <div class="eyebrow">Start your fitness journey</div>
+   <h2>Request a session</h2>
+   <p>Tell us which training method you prefer. This is a preferred-time request, not an automatic booking or confirmed appointment.</p>
+   <form id="bookingForm">
+    <div class="formgrid">
+     <div class="field"><label for="bname">Your name</label><input id="bname" required autocomplete="name"></div>
+     <div class="field"><label for="bcontact">Contact number or email</label><input id="bcontact" required autocomplete="tel"></div>
+     <div class="field full"><label for="bmode">Training method</label>
+      <select id="bmode" required><option value="">Choose a method</option><option>Home visit in Siliguri</option><option>Visit trainer's location in Siliguri</option><option>Online live video session</option><option>Online workout plan</option></select>
+     </div>
+     <div class="field"><label for="bdate">Preferred date</label><input id="bdate" type="date" required></div>
+     <div class="field"><label for="btime">Preferred time</label><input id="btime" type="time" required></div>
+     <div class="field full"><label for="bmessage">Goals or questions (optional)</label><textarea id="bmessage" rows="3" placeholder="Tell us what you want help with"></textarea></div>
+    </div>
+    <div class="notice">This form is a visual preview and does not send or save your details yet. Please do not enter private information until secure submission is enabled.</div>
+    <button class="btn primary" type="submit">Check Request Preview ↗</button>
+   </form>
+   <p id="bookingResult" role="status"></p>
+   <p><a href="#home" onclick="showPage('home')">← Back to home</a></p>
+  </div>
+ </div>
+</div>
+
+<div class="page" id="register">
+ <div class="container">
+  <div class="formbox">
+   <div class="eyebrow">Join Everstrong Fitness</div>
+   <h2>Registration</h2>
+   <p>The full registration system will be connected after Firebase security is configured.</p>
+   <div class="notice">Registration is not active yet. Your details will not be saved from this preview.</div>
+   <div class="actions">
+    <a class="btn primary" href="#booking" onclick="showPage('booking')">Request a Session</a>
+    <a class="btn secondary" href="#home" onclick="showPage('home')">Back to Home</a>
+   </div>
+  </div>
+ </div>
+</div>
+</main>
+
+<footer>
+ <div class="container footerrow">
+  <div><strong>EVERSTRONG FITNESS</strong><p class="small">Build strength. Build confidence. Keep progressing.</p></div>
+  <div class="small">Siliguri, West Bengal · Online coaching across India</div>
+  <div class="small">© <span id="year"></span> Everstrong Fitness</div>
+ </div>
+</footer>
+
+<script>
+function showPage(id,section){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ const page=document.getElementById(id);
+ if(page) page.classList.add('active');
+ if(id==='home' && section){
+  setTimeout(()=>{const target=document.getElementById(section);if(target)target.scrollIntoView({behavior:'smooth'});},50);
+ }else{
+  window.scrollTo({top:0,behavior:'smooth'});
+ }
+}
+function route(){
+ const id=location.hash.replace('#','');
+ if(['booking','register'].includes(id)){showPage(id);}
+ else{showPage('home',id && id!=='home' ? id : null);}
+}
+window.addEventListener('hashchange',route);
+document.getElementById('themeBtn').addEventListener('click',()=>{
+ document.body.classList.toggle('light');
+ document.getElementById('themeBtn').textContent=
+ document.body.classList.contains('light')?'☾':'☼';
+});
+document.getElementById('bookingForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ document.getElementById('bookingResult').textContent=
+ 'Preview only: no request was sent or saved. Secure submission will be enabled in a later step.';
+});
+document.getElementById('year').textContent=new Date().getFullYear();
+route();
+</script>
+</body>
+</html>
+
