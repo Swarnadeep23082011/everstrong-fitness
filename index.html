@@ -180,7 +180,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
  <section id="about">
   <div class="container about">
    <div class="aboutimage">
-    <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=900&q=85"
+    <img src="Picsart_26-10-30_22-51-41-723.jpg"
     alt="Strength training in a gym" loading="lazy">
    </div>
    <div>
@@ -315,6 +315,33 @@ document.getElementById('bookingForm').addEventListener('submit',e=>{
 document.getElementById('year').textContent=new Date().getFullYear();
 route();
 </script>
+  
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyATp-1C4ozYq2reRI05RJzjNCPfh_1uLpk",
+  authDomain: "everstrong-fitness.firebaseapp.com",
+  projectId: "everstrong-fitness",
+  storageBucket: "everstrong-fitness.firebasestorage.app",
+  messagingSenderId: "529544810195",
+  appId: "1:529544810195:web:531f53b1fb4c36758e0e26"
+};
+  
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  window.firebaseApp = app;
+  window.firebaseAuth = auth;
+  window.firebaseDB = db;
+
+  console.log("Everstrong Fitness: Firebase connected.");
+</script>
+
 </body>
 </html>
 
