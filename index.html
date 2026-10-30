@@ -205,6 +205,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
    <a href="#gallery" onclick="showPage('home','gallery')">Gallery</a>
    <a href="#booking" onclick="showPage('booking')">Book</a>
     <button class="theme" id="accountBtn" type="button">Account</button>
+    <button class="theme" id="adminBtn" type="button" hidden>Admin Dashboard</button>
    <button class="theme" id="themeBtn" type="button" aria-label="Switch colour theme">☼</button>
   </nav>
  </div>
@@ -352,6 +353,28 @@ font-size:13px;color:var(--muted);margin:17px 0}
   </div>
  </div>
 </div>
+  
+<div class="page" id="admin">
+  <div class="container">
+    <div class="formbox">
+      <div class="eyebrow">Private administration</div>
+      <h2>Admin Dashboard</h2>
+      <p>Manage Everstrong Fitness from one place.</p>
+
+      <div class="actions">
+        <button class="btn primary" type="button" id="viewRegistrations">Registrations</button>
+        <button class="btn secondary" type="button" id="managePricing">Pricing</button>
+        <button class="btn secondary" type="button" id="manageSchedule">Training Schedule</button>
+        <button class="btn secondary" type="button" id="manageContent">Website Content</button>
+      </div>
+
+      <div id="adminPanelMessage" class="notice">
+        Admin dashboard setup is in progress. Management features are not active yet.
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <footer>
@@ -373,11 +396,23 @@ function showPage(id,section){
   window.scrollTo({top:0,behavior:'smooth'});
  }
 }
+
 function route(){
  const id=location.hash.replace('#','');
- if(['booking','register'].includes(id)){showPage(id);}
- else{showPage('home',id && id!=='home' ? id : null);}
-}
+
+ if(id==='admin'){
+  if(window.isAdminUser===true){
+   showPage('admin');
+  }else{
+   showPage('home');
+   if(location.hash!=='#home') location.hash='home';
+  }
+ }else if(['booking','register'].includes(id)){
+  showPage(id);
+ }else{
+  showPage('home',id && id!=='home' ? id : null);
+ }
+
 window.addEventListener('hashchange',route);
 document.getElementById('themeBtn').addEventListener('click',()=>{
  document.body.classList.toggle('light');
@@ -410,6 +445,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebas
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  window.isAdminUser = false;
+  const ADMIN_UID = "Hr2Hn9AltmVMkO9Gl2hSjtEsLdB2";
+  document.getElementById("adminBtn").addEventListener("click", function() {
+  if (window.isAdminUser === true) {
+    window.location.hash = "admin";
+  }
+});
   const db = getFirestore(app);
 
   const accountOverlay = document.getElementById("accountOverlay");
@@ -555,6 +597,10 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebas
   });
 
   onAuthStateChanged(auth, function(user) {
+        window.isAdminUser = !!user && user.uid === ADMIN_UID;
+
+    const adminBtn = document.getElementById("adminBtn");
+    adminBtn.hidden = !window.isAdminUser;
     if (user) {
       accountChoices.hidden = true;
       accountForm.hidden = true;
