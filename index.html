@@ -121,6 +121,77 @@ font-size:13px;color:var(--muted);margin:17px 0}
  .field.full{grid-column:auto}
  h1{letter-spacing:-1.7px}
 }
+  
+.account-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(3,8,20,.82);
+  backdrop-filter:blur(9px);
+}
+.account-overlay[hidden],
+#accountForm[hidden],
+#accountChoices[hidden],
+#accountBack[hidden]{
+  display:none;
+}
+.account-box{
+  position:relative;
+  width:100%;
+  max-width:420px;
+  padding:30px 24px;
+  border:1px solid rgba(100,140,255,.3);
+  border-radius:22px;
+  background:#101a30;
+  color:#f4f7ff;
+  box-shadow:0 20px 70px rgba(0,0,0,.45);
+  text-align:center;
+}
+.account-box h2{margin:8px 0 10px}
+.account-box p{color:#aebbd2;line-height:1.5}
+.account-close{
+  position:absolute;
+  top:10px;
+  right:14px;
+  border:0;
+  background:transparent;
+  color:#fff;
+  font-size:28px;
+  cursor:pointer;
+}
+.account-box input{
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  margin:12px 0;
+  padding:13px;
+  border:1px solid #344563;
+  border-radius:10px;
+  background:#0a1223;
+  color:#fff;
+  font:inherit;
+}
+.account-box button:not(.account-close){
+  width:100%;
+  margin-top:10px;
+  padding:13px;
+  border:1px solid #4565c5;
+  border-radius:10px;
+  background:#243e83;
+  color:#fff;
+  font:inherit;
+  font-weight:600;
+  cursor:pointer;
+}
+.account-box button:not(.account-close):hover{
+  background:#3155a8;
+}
+#accountStatus{overflow-wrap:anywhere}
+
 </style>
 </head>
 <body>
@@ -133,6 +204,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
    <a href="#services" onclick="showPage('home','services')">Services</a>
    <a href="#gallery" onclick="showPage('home','gallery')">Gallery</a>
    <a href="#booking" onclick="showPage('booking')">Book</a>
+    <button class="theme" id="accountBtn" type="button">Account</button>
    <button class="theme" id="themeBtn" type="button" aria-label="Switch colour theme">☼</button>
   </nav>
  </div>
@@ -323,8 +395,8 @@ route();
   
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
   apiKey: "AIzaSyATp-1C4ozYq2reRI05RJzjNCPfh_1uLpk",
@@ -340,12 +412,196 @@ route();
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  const accountOverlay = document.getElementById("accountOverlay");
+  const accountBtn = document.getElementById("accountBtn");
+  const accountClose = document.getElementById("accountClose");
+  const accountTitle = document.getElementById("accountTitle");
+  const accountMessage = document.getElementById("accountMessage");
+  const accountChoices = document.getElementById("accountChoices");
+  const accountForm = document.getElementById("accountForm");
+  const accountName = document.getElementById("accountName");
+  const accountEmail = document.getElementById("accountEmail");
+  const accountPassword = document.getElementById("accountPassword");
+  const accountSubmit = document.getElementById("accountSubmit");
+  const googleSignIn = document.getElementById("googleSignIn");
+  const accountBack = document.getElementById("accountBack");
+  const accountStatus = document.getElementById("accountStatus");
+
+  let accountMode = "login";
+
+  const logoutButton = document.createElement("button");
+  logoutButton.type = "button";
+  logoutButton.textContent = "Log Out";
+  logoutButton.hidden = true;
+  document.querySelector(".account-box").appendChild(logoutButton);
+
+  function openAccount() {
+    accountOverlay.hidden = false;
+  }
+
+  function closeAccount() {
+    accountOverlay.hidden = true;
+    accountStatus.textContent = "";
+  }
+
+  function showAccountForm(mode) {
+    accountMode = mode;
+    accountChoices.hidden = true;
+    accountForm.hidden = false;
+    googleSignIn.hidden = true;
+    accountBack.hidden = false;
+    accountName.hidden = mode !== "signup";
+    accountName.required = mode === "signup";
+    accountTitle.textContent = mode === "signup" ? "Create your account" : "Welcome back";
+    accountMessage.textContent = mode === "signup" ? "Enter your details to sign up." : "Log in to your account.";
+    accountSubmit.textContent = mode === "signup" ? "Create Account" : "Log In";
+    accountStatus.textContent = "";
+  }
+
+  function showAccountChoices() {
+    accountChoices.hidden = false;
+    accountForm.hidden = true;
+    googleSignIn.hidden = false;
+    accountBack.hidden = true;
+    accountName.value = "";
+    accountEmail.value = "";
+    accountPassword.value = "";
+    accountTitle.textContent = "Welcome to Everstrong Fitness";
+    accountMessage.textContent = "Choose how you'd like to continue.";
+    accountStatus.textContent = "";
+  }
+
+  accountBtn.addEventListener("click", openAccount);
+  accountClose.addEventListener("click", closeAccount);
+
+  accountOverlay.addEventListener("click", function(event) {
+    if (event.target === accountOverlay) closeAccount();
+  });
+
+  document.getElementById("showSignup").addEventListener("click", function() {
+    showAccountForm("signup");
+  });
+
+  document.getElementById("showLogin").addEventListener("click", function() {
+    showAccountForm("login");
+  });
+
+  accountBack.addEventListener("click", showAccountChoices);
+
+  document.getElementById("continueGuest").addEventListener("click", function() {
+    closeAccount();
+  });
+
+  accountForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    accountSubmit.disabled = true;
+    accountStatus.textContent = "Please wait...";
+
+    try {
+      if (accountMode === "signup") {
+        const result = await createUserWithEmailAndPassword(
+          auth,
+          accountEmail.value.trim(),
+          accountPassword.value
+        );
+        await updateProfile(result.user, {
+          displayName: accountName.value.trim()
+        });
+        accountStatus.textContent = "Your account has been created successfully.";
+      } else {
+        await signInWithEmailAndPassword(
+          auth,
+          accountEmail.value.trim(),
+          accountPassword.value
+        );
+        accountStatus.textContent = "Login successful.";
+      }
+    } catch (error) {
+      const messages = {
+        "auth/email-already-in-use": "This email already has an account. Please log in.",
+        "auth/invalid-email": "Please enter a valid email address.",
+        "auth/weak-password": "Please choose a stronger password (at least 6 characters).",
+        "auth/invalid-credential": "Email or password is incorrect.",
+        "auth/too-many-requests": "Too many attempts. Please try again later."
+      };
+      accountStatus.textContent = messages[error.code] || "Unable to complete this request. Please check your details and try again.";
+    } finally {
+      accountSubmit.disabled = false;
+    }
+  });
+
+  googleSignIn.addEventListener("click", async function() {
+    googleSignIn.disabled = true;
+    accountStatus.textContent = "Connecting to Google...";
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      accountStatus.textContent = "Google sign-in successful.";
+    } catch (error) {
+      accountStatus.textContent = "Google sign-in could not be completed. Please try again or use email and password.";
+    } finally {
+      googleSignIn.disabled = false;
+    }
+  });
+
+  logoutButton.addEventListener("click", async function() {
+    try {
+      await signOut(auth);
+      showAccountChoices();
+      accountStatus.textContent = "You have logged out.";
+    } catch (error) {
+      accountStatus.textContent = "Logout failed. Please try again.";
+    }
+  });
+
+  onAuthStateChanged(auth, function(user) {
+    if (user) {
+      accountChoices.hidden = true;
+      accountForm.hidden = true;
+      googleSignIn.hidden = true;
+      accountBack.hidden = true;
+      logoutButton.hidden = false;
+      accountTitle.textContent = "Your Account";
+      accountMessage.textContent = "You are signed in.";
+      accountStatus.textContent = user.displayName || user.email || "Signed in";
+    } else {
+      logoutButton.hidden = true;
+      showAccountChoices();
+    }
+  });
+
   window.firebaseApp = app;
   window.firebaseAuth = auth;
   window.firebaseDB = db;
 
   console.log("Everstrong Fitness: Firebase connected.");
 </script>
+
+<div class="account-overlay" id="accountOverlay" hidden>
+  <div class="account-box">
+    <button class="account-close" id="accountClose" type="button" aria-label="Close">×</button>
+
+    <h2 id="accountTitle">Welcome to Everstrong Fitness</h2>
+    <p id="accountMessage">Choose how you'd like to continue.</p>
+
+    <div id="accountChoices">
+      <button type="button" id="showSignup">Sign Up</button>
+      <button type="button" id="showLogin">Log In</button>
+      <button type="button" id="continueGuest">Continue as Guest</button>
+    </div>
+
+    <form id="accountForm" hidden>
+      <input id="accountName" type="text" placeholder="Full name" autocomplete="name">
+      <input id="accountEmail" type="email" placeholder="Email address" autocomplete="email" required>
+      <input id="accountPassword" type="password" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" id="accountSubmit">Continue</button>
+    </form>
+
+    <button type="button" id="googleSignIn">Continue with Google</button>
+    <button type="button" id="accountBack" hidden>Back</button>
+    <p id="accountStatus" role="status"></p>
+  </div>
+</div>
 
 </body>
 </html>
