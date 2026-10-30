@@ -412,6 +412,7 @@ function route(){
  }else{
   showPage('home',id && id!=='home' ? id : null);
  }
+}
 
 window.addEventListener('hashchange',route);
 document.getElementById('themeBtn').addEventListener('click',()=>{
