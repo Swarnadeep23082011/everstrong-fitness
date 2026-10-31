@@ -339,20 +339,88 @@ font-size:13px;color:var(--muted);margin:17px 0}
  </div>
 </div>
 
+
 <div class="page" id="register">
  <div class="container">
   <div class="formbox">
    <div class="eyebrow">Join Everstrong Fitness</div>
-   <h2>Registration</h2>
-   <p>The full registration system will be connected after Firebase security is configured.</p>
-   <div class="notice">Registration is not active yet. Your details will not be saved from this preview.</div>
+   <h2>Customer Registration</h2>
+   <p>Complete your details to request your fitness training plan.</p>
+
+   <form id="registrationForm">
+
+    <label for="regName">Full Name</label>
+    <input id="regName" type="text" required maxlength="100" placeholder="Enter your full name">
+
+    <label for="regPhone">Mobile Number</label>
+    <input id="regPhone" type="tel" required maxlength="20" placeholder="Enter your mobile number">
+
+    <label for="regAddress">Full Address</label>
+    <textarea id="regAddress" required maxlength="500" placeholder="Enter your full address"></textarea>
+
+    <label for="trainingMode">Training Mode</label>
+    <select id="trainingMode" required>
+     <option value="">Select training mode</option>
+     <option value="offline">Offline Training</option>
+     <option value="online">Online Training</option>
+    </select>
+
+    <div id="offlineMethodBox" hidden>
+     <label for="offlineMethod">Offline Training Method</label>
+     <select id="offlineMethod">
+      <option value="">Select an option</option>
+      <option value="home_visit">Trainer visits your location</option>
+      <option value="customer_visit">You visit the trainer</option>
+     </select>
+    </div>
+
+    <label for="startDate">Preferred Starting Date</label>
+    <input id="startDate" type="date" required>
+
+    <label for="preferredDay">Preferred Training Day</label>
+    <select id="preferredDay" required>
+     <option value="">Select a day</option>
+     <option>Monday</option>
+     <option>Tuesday</option>
+     <option>Wednesday</option>
+     <option>Thursday</option>
+     <option>Friday</option>
+     <option>Saturday</option>
+     <option>Sunday</option>
+    </select>
+
+    <label for="preferredTime">Preferred Training Time</label>
+    <select id="preferredTime" required>
+     <option value="">Select a time</option>
+     <option>Morning</option>
+     <option>Afternoon</option>
+     <option>Evening</option>
+    </select>
+
+    <div class="notice" id="registrationFee">
+     Monthly fee will be displayed here once pricing is configured.
+    </div>
+
+    <div class="notice">
+     Your registration will remain pending until the trainer contacts you and confirms the details. Preferred timings are requests, not confirmed bookings.
+    </div>
+
+    <button class="btn primary" type="submit">
+     Submit Registration
+    </button>
+
+    <div id="registrationMessage" class="notice" hidden></div>
+
+   </form>
+
    <div class="actions">
-    <a class="btn primary" href="#booking" onclick="showPage('booking')">Request a Session</a>
-    <a class="btn secondary" href="#home" onclick="showPage('home')">Back to Home</a>
+    <a class="btn secondary" href="#home">Back to Home</a>
    </div>
   </div>
  </div>
 </div>
+
+
   
 <div class="page" id="admin">
   <div class="container">
@@ -420,12 +488,112 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
  document.getElementById('themeBtn').textContent=
  document.body.classList.contains('light')?'☾':'☼';
 });
+  document.getElementById("registrationForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const message = document.getElementById("registrationMessage");
+  const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+
+  message.hidden = false;
+
+  if (!user) {
+    message.textContent = "Please sign in or create an account before submitting your registration.";
+
+    if (typeof showAccountModal === "function") {
+      showAccountModal();
+    } else {
+      document.getElementById("accountOverlay").hidden = false;
+    }
+    return;
+  }
+
+  const mode = document.getElementById("trainingMode").value;
+  const method = document.getElementById("offlineMethod").value;
+
+  if (mode === "offline" && !method) {
+    message.textContent = "Please select an offline training method.";
+    return;
+  }
+
+  message.textContent = "Submitting your registration...";
+
+  try {
+    const registration = await addDoc(collection(db, "registrations"), {
+      userId: user.uid,
+      fullName: document.getElementById("regName").value.trim(),
+      phone: document.getElementById("regPhone").value.trim(),
+      address: document.getElementById("regAddress").value.trim(),
+      trainingMode: mode,
+      offlineMethod: mode === "offline" ? method : "not_applicable",
+      startDate: document.getElementById("startDate").value,
+      preferredDay: document.getElementById("preferredDay").value,
+      preferredTime: document.getElementById("preferredTime").value,
+      monthlyFee: null,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    message.textContent =
+      "Registration submitted successfully! Your registration ID is: " +
+      registration.id +
+      ". Your request is pending trainer confirmation.";
+
+    document.getElementById("registrationForm").reset();
+    offlineMethodBox.hidden = true;
+    offlineMethod.required = false;
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    message.textContent =
+      "Registration could not be submitted. Please try again.";
+  }
+});
+  
 document.getElementById('bookingForm').addEventListener('submit',e=>{
  e.preventDefault();
  document.getElementById('bookingResult').textContent=
  'Preview only: no request was sent or saved. Secure submission will be enabled in a later step.';
 });
 document.getElementById('year').textContent=new Date().getFullYear();
+  
+const trainingMode = document.getElementById("trainingMode");
+const offlineMethodBox = document.getElementById("offlineMethodBox");
+const offlineMethod = document.getElementById("offlineMethod");
+
+trainingMode.addEventListener("change", function() {
+  const isOffline = trainingMode.value === "offline";
+
+  offlineMethodBox.hidden = !isOffline;
+  offlineMethod.required = isOffline;
+
+  if (!isOffline) {
+    offlineMethod.value = "";
+  }
+});
+const startDateInput = document.getElementById("startDate");
+
+const today = new Date();
+const localToday = new Date(
+  today.getTime() - today.getTimezoneOffset() * 60000
+).toISOString().split("T")[0];
+
+startDateInput.min = localToday;
+  
+const registrationFee = document.getElementById("registrationFee");
+
+trainingMode.addEventListener("change", function() {
+  if (trainingMode.value === "online") {
+    registrationFee.textContent =
+      "Online coaching: Monthly pricing will be confirmed by the trainer.";
+  } else if (trainingMode.value === "offline") {
+    registrationFee.textContent =
+      "Offline training in Siliguri: Monthly pricing and any applicable visit fee will be confirmed by the trainer.";
+  } else {
+    registrationFee.textContent =
+      "Monthly fee will be displayed here once pricing is configured.";
+  }
+});
+
 route();
 </script>
   
