@@ -642,10 +642,10 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
       "Monthly pricing will be calculated once admin pricing is configured.";
 
   } catch (error) {
-    console.error("Registration error:", error);
-    message.textContent =
-      "Registration could not be submitted. Please try again.";
-  }
+  console.error("Registration error:", error);
+  message.textContent =
+    "Registration failed: " + (error.message || error.code || "Unknown error");
+}
 });
 
 // EXISTING BOOKING PREVIEW
