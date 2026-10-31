@@ -833,6 +833,7 @@ window.saveRegistration = async function(data) {
 
   const pricingRef = doc(db, "siteSettings", "pricing");
   const pricingSnap = await getDoc(pricingRef);
+  console.log("STEP 1: Pricing document read successfully.");
 
   if (!pricingSnap.exists()) {
     throw new Error("Training prices have not been configured.");
@@ -866,6 +867,7 @@ window.saveRegistration = async function(data) {
   }
 
   const monthlyFee = dailyRate * numberOfDays * 4;
+  console.log("STEP 2: Attempting to create registration.");
 
   const registration = await addDoc(collection(db, "registrations"), {
     userId: user.uid,
