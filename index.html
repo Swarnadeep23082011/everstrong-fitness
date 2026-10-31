@@ -560,54 +560,7 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
  document.getElementById('themeBtn').textContent=
  document.body.classList.contains('light')?'☾':'☼';
 });
-  document.getElementById("registrationForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-
-  const message = document.getElementById("registrationMessage");
-  const user = window.firebaseAuth && window.firebaseAuth.currentUser;
-
-  message.hidden = false;
-
-  if (!user) {
-    message.textContent = "Please sign in or create an account before submitting your registration.";
-
-    if (typeof showAccountModal === "function") {
-      showAccountModal();
-    } else {
-      document.getElementById("accountOverlay").hidden = false;
-    }
-    return;
-  }
-
-  const mode = document.getElementById("trainingMode").value;
-  const method = document.getElementById("offlineMethod").value;
-
-  if (mode === "offline" && !method) {
-    message.textContent = "Please select an offline training method.";
-    return;
-  }
-
-  message.textContent = "Submitting your registration...";
-
-  try {
-    const registration = await addDoc(collection(db, "registrations"), {
-      userId: user.uid,
-      fullName: document.getElementById("regName").value.trim(),
-      phone: document.getElementById("regPhone").value.trim(),
-      address: document.getElementById("regAddress").value.trim(),
-      trainingMode: mode,
-      offlineMethod: mode === "offline" ? method : "not_applicable",
-      startDate: document.getElementById("startDate").value,
-      preferredDay: document.getElementById("preferredDay").value,
-      preferredTime: document.getElementById("preferredTime").value,
-      monthlyFee: null,
-      status: "pending",
-      createdAt: serverTimestamp()
-    });
-
-    message.textContent =
-      "Registration submitted successfully! Your registration ID is: " +
-      registration.id +
+  
 
 // CUSTOMER REGISTRATION
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
