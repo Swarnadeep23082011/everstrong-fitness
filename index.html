@@ -361,48 +361,95 @@ font-size:13px;color:var(--muted);margin:17px 0}
     <label for="trainingMode">Training Mode</label>
     <select id="trainingMode" required>
      <option value="">Select training mode</option>
-     <option value="offline">Offline Training</option>
-     <option value="online">Online Training</option>
+     <option value="online">Online Coaching</option>
+     <option value="customer_visit">You visit the trainer</option>
+     <option value="home_visit">Trainer visits your location</option>
     </select>
-
-    <div id="offlineMethodBox" hidden>
-     <label for="offlineMethod">Offline Training Method</label>
-     <select id="offlineMethod">
-      <option value="">Select an option</option>
-      <option value="home_visit">Trainer visits your location</option>
-      <option value="customer_visit">You visit the trainer</option>
-     </select>
-    </div>
 
     <label for="startDate">Preferred Starting Date</label>
     <input id="startDate" type="date" required>
 
-    <label for="preferredDay">Preferred Training Day</label>
-    <select id="preferredDay" required>
-     <option value="">Select a day</option>
-     <option>Monday</option>
-     <option>Tuesday</option>
-     <option>Wednesday</option>
-     <option>Thursday</option>
-     <option>Friday</option>
-     <option>Saturday</option>
-     <option>Sunday</option>
-    </select>
+    <label>Preferred Training Days</label>
+    <p>Select all the days you would like to train.</p>
 
-    <label for="preferredTime">Preferred Training Time</label>
-    <select id="preferredTime" required>
-     <option value="">Select a time</option>
-     <option>Morning</option>
-     <option>Afternoon</option>
-     <option>Evening</option>
-    </select>
-
-    <div class="notice" id="registrationFee">
-     Monthly fee will be displayed here once pricing is configured.
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Monday"> Monday</label>
+     <select id="timeMonday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
     </div>
 
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Tuesday"> Tuesday</label>
+     <select id="timeTuesday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Wednesday"> Wednesday</label>
+     <select id="timeWednesday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Thursday"> Thursday</label>
+     <select id="timeThursday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Friday"> Friday</label>
+     <select id="timeFriday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Saturday"> Saturday</label>
+     <select id="timeSaturday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    <div class="day-choice">
+     <label><input type="checkbox" name="trainingDays" value="Sunday"> Sunday</label>
+     <select id="timeSunday" disabled>
+      <option value="">Choose time</option>
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+     </select>
+    </div>
+
+    
+<div class="notice" id="registrationFee">
+  Select your training mode and preferred days to see the monthly price.
+</div>
+
+
     <div class="notice">
-     Your registration will remain pending until the trainer contacts you and confirms the details. Preferred timings are requests, not confirmed bookings.
+     Your registration remains pending until the trainer contacts you and confirms the details. Your selected days and times are preferences, not confirmed bookings.
     </div>
 
     <button class="btn primary" type="submit">
@@ -421,7 +468,9 @@ font-size:13px;color:var(--muted);margin:17px 0}
 </div>
 
 
+
   
+
 <div class="page" id="admin">
   <div class="container">
     <div class="formbox">
@@ -437,11 +486,34 @@ font-size:13px;color:var(--muted);margin:17px 0}
       </div>
 
       <div id="adminPanelMessage" class="notice">
-        Admin dashboard setup is in progress. Management features are not active yet.
+        Select a management section above.
       </div>
+
+      <!-- PRICING MANAGEMENT -->
+      <div id="pricingPanel" hidden>
+        <h3>Training Pricing</h3>
+        <p>Set the price per training day for each training mode.</p>
+
+        <label for="onlineDailyRate">Online Coaching — Price per day (₹)</label>
+        <input id="onlineDailyRate" type="number" min="0" step="1" placeholder="Not configured">
+
+        <label for="customerVisitDailyRate">Customer Visits Trainer — Price per day (₹)</label>
+        <input id="customerVisitDailyRate" type="number" min="0" step="1" placeholder="Not configured">
+
+        <label for="homeVisitDailyRate">Trainer Visits Customer — Price per day (₹)</label>
+        <input id="homeVisitDailyRate" type="number" min="0" step="1" placeholder="Not configured">
+
+        <button class="btn primary" type="button" id="savePricing">
+          Save Pricing
+        </button>
+
+        <div id="pricingMessage" class="notice" hidden></div>
+      </div>
+
     </div>
   </div>
 </div>
+
 
 </main>
 
@@ -536,11 +608,85 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
     message.textContent =
       "Registration submitted successfully! Your registration ID is: " +
       registration.id +
+
+// CUSTOMER REGISTRATION
+document.getElementById("registrationForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const message = document.getElementById("registrationMessage");
+  const user = window.firebaseAuth && window.firebaseAuth.currentUser;
+
+  message.hidden = false;
+
+  if (!user) {
+    message.textContent = "Please sign in before submitting your registration.";
+    if (typeof showAccountModal === "function") {
+      showAccountModal();
+    } else {
+      document.getElementById("accountOverlay").hidden = false;
+    }
+    return;
+  }
+
+  const mode = document.getElementById("trainingMode").value;
+  const selectedDays = {};
+
+  document.querySelectorAll('input[name="trainingDays"]:checked').forEach(function(checkbox) {
+    const day = checkbox.value;
+    const time = document.getElementById("time" + day).value;
+
+    if (time) {
+      selectedDays[day] = time;
+    }
+  });
+
+  if (Object.keys(selectedDays).length === 0) {
+    message.textContent = "Please select at least one training day and its preferred time.";
+    return;
+  }
+
+  if (Object.keys(selectedDays).length !==
+      document.querySelectorAll('input[name="trainingDays"]:checked').length) {
+    message.textContent = "Please select a preferred time for every selected day.";
+    return;
+  }
+
+  message.textContent = "Submitting your registration...";
+
+  const registrationData = {
+    userId: user.uid,
+    fullName: document.getElementById("regName").value.trim(),
+    phone: document.getElementById("regPhone").value.trim(),
+    address: document.getElementById("regAddress").value.trim(),
+    trainingMode: mode,
+    startDate: document.getElementById("startDate").value,
+    trainingDays: selectedDays,
+    monthlyFee: null,
+    status: "pending"
+  };
+
+  try {
+    if (typeof window.saveRegistration !== "function") {
+      throw new Error("Registration service is not connected yet.");
+    }
+
+    const registrationId = await window.saveRegistration(registrationData);
+
+    message.textContent =
+      "Registration submitted successfully! Your registration ID is: " +
+      registrationId +
       ". Your request is pending trainer confirmation.";
 
     document.getElementById("registrationForm").reset();
-    offlineMethodBox.hidden = true;
-    offlineMethod.required = false;
+
+    document.querySelectorAll('input[name="trainingDays"]').forEach(function(checkbox) {
+      const timeSelect = document.getElementById("time" + checkbox.value);
+      timeSelect.disabled = true;
+      timeSelect.required = false;
+    });
+
+    registrationFee.textContent =
+      "Monthly pricing will be calculated once admin pricing is configured.";
 
   } catch (error) {
     console.error("Registration error:", error);
@@ -548,28 +694,37 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
       "Registration could not be submitted. Please try again.";
   }
 });
-  
-document.getElementById('bookingForm').addEventListener('submit',e=>{
- e.preventDefault();
- document.getElementById('bookingResult').textContent=
- 'Preview only: no request was sent or saved. Secure submission will be enabled in a later step.';
+
+// EXISTING BOOKING PREVIEW
+document.getElementById("bookingForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  document.getElementById("bookingResult").textContent =
+    "Preview only: no request was sent or saved. Secure submission will be enabled in a later step.";
 });
-document.getElementById('year').textContent=new Date().getFullYear();
-  
+
+// CURRENT YEAR
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// TRAINING MODE
 const trainingMode = document.getElementById("trainingMode");
-const offlineMethodBox = document.getElementById("offlineMethodBox");
-const offlineMethod = document.getElementById("offlineMethod");
+const registrationFee = document.getElementById("registrationFee");
 
-trainingMode.addEventListener("change", function() {
-  const isOffline = trainingMode.value === "offline";
+// INDIVIDUAL DAY AND TIME SELECTION
+document.querySelectorAll('input[name="trainingDays"]').forEach(function(checkbox) {
+  const day = checkbox.value;
+  const timeSelect = document.getElementById("time" + day);
 
-  offlineMethodBox.hidden = !isOffline;
-  offlineMethod.required = isOffline;
+  checkbox.addEventListener("change", function() {
+    timeSelect.disabled = !checkbox.checked;
+    timeSelect.required = checkbox.checked;
 
-  if (!isOffline) {
-    offlineMethod.value = "";
-  }
+    if (!checkbox.checked) {
+      timeSelect.value = "";
+    }
+  });
 });
+
+// PREVENT PAST STARTING DATES
 const startDateInput = document.getElementById("startDate");
 
 const today = new Date();
@@ -578,21 +733,101 @@ const localToday = new Date(
 ).toISOString().split("T")[0];
 
 startDateInput.min = localToday;
-  
-const registrationFee = document.getElementById("registrationFee");
 
-trainingMode.addEventListener("change", function() {
-  if (trainingMode.value === "online") {
+
+// MONTHLY PRICING CALCULATOR
+
+let savedPricingRates = null;
+
+
+async function loadPublicPricing() {
+  try {
+    if (typeof window.loadPricingRates !== "function") {
+      throw new Error("Pricing connection is not ready.");
+    }
+
+    savedPricingRates = await window.loadPricingRates();
+
+    updateMonthlyPrice();
+  } catch (error) {
+    console.error("Public pricing load error:", error);
+    savedPricingRates = null;
     registrationFee.textContent =
-      "Online coaching: Monthly pricing will be confirmed by the trainer.";
-  } else if (trainingMode.value === "offline") {
-    registrationFee.textContent =
-      "Offline training in Siliguri: Monthly pricing and any applicable visit fee will be confirmed by the trainer.";
-  } else {
-    registrationFee.textContent =
-      "Monthly fee will be displayed here once pricing is configured.";
+      "Pricing could not be loaded. Please try again later.";
   }
+}
+
+
+function updateMonthlyPrice() {
+  const mode = trainingMode.value;
+
+  const selectedDays = document.querySelectorAll(
+    'input[name="trainingDays"]:checked'
+  ).length;
+
+  if (!mode) {
+    registrationFee.textContent =
+      "Select your training mode and preferred days to see the monthly price.";
+    return;
+  }
+
+  if (selectedDays === 0) {
+    registrationFee.textContent =
+      "Select your preferred training days to calculate the monthly price.";
+    return;
+  }
+
+  if (!savedPricingRates) {
+    registrationFee.textContent =
+      "Pricing has not been configured by the trainer yet.";
+    return;
+  }
+
+  let dailyRate;
+
+  if (mode === "online") {
+    dailyRate = savedPricingRates.onlinePerDay;
+  } else if (mode === "customer_visit") {
+    dailyRate = savedPricingRates.customerVisitPerDay;
+  } else if (mode === "home_visit") {
+    dailyRate = savedPricingRates.homeVisitPerDay;
+  }
+
+  if (
+    typeof dailyRate !== "number" ||
+    !Number.isFinite(dailyRate) ||
+    dailyRate < 0
+  ) {
+    registrationFee.textContent =
+      "Pricing for this training mode has not been configured yet.";
+    return;
+  }
+
+  const monthlyTotal = dailyRate * selectedDays * 4;
+
+  registrationFee.textContent =
+    "Daily rate: ₹" + dailyRate +
+    " | Training days per week: " + selectedDays +
+    " | Estimated monthly total: ₹" + monthlyTotal;
+}
+
+// Refresh calculation when training mode changes
+trainingMode.addEventListener("change", updateMonthlyPrice);
+
+// Refresh calculation when a training day changes
+document.querySelectorAll('input[name="trainingDays"]').forEach(function(checkbox) {
+  checkbox.addEventListener("change", updateMonthlyPrice);
 });
+
+// Load the latest public pricing
+window.addEventListener("pricing-ready", loadPublicPricing);
+
+if (typeof window.loadPricingRates === "function") {
+  loadPublicPricing();
+}
+
+
+
 
 route();
 </script>
@@ -605,6 +840,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
+  setDoc,
   query,
   where,
   doc,
@@ -632,6 +869,156 @@ import {
   }
 });
   const db = getFirestore(app);
+  // Save customer registration to Firestore
+
+window.saveRegistration = async function(data) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("User is not signed in.");
+  }
+
+  const pricingRef = doc(db, "siteSettings", "pricing");
+  const pricingSnap = await getDoc(pricingRef);
+
+  if (!pricingSnap.exists()) {
+    throw new Error("Training prices have not been configured.");
+  }
+
+  const rates = pricingSnap.data();
+  let dailyRate;
+
+  if (data.trainingMode === "online") {
+    dailyRate = rates.onlinePerDay;
+  } else if (data.trainingMode === "customer_visit") {
+    dailyRate = rates.customerVisitPerDay;
+  } else if (data.trainingMode === "home_visit") {
+    dailyRate = rates.homeVisitPerDay;
+  } else {
+    throw new Error("Invalid training mode.");
+  }
+
+  if (
+    typeof dailyRate !== "number" ||
+    !Number.isFinite(dailyRate) ||
+    dailyRate < 0
+  ) {
+    throw new Error("Pricing for this training mode is not configured.");
+  }
+
+  const numberOfDays = Object.keys(data.trainingDays).length;
+
+  if (numberOfDays < 1 || numberOfDays > 7) {
+    throw new Error("Please select valid training days.");
+  }
+
+  const monthlyFee = dailyRate * numberOfDays * 4;
+
+  const registration = await addDoc(collection(db, "registrations"), {
+    userId: user.uid,
+    fullName: data.fullName,
+    phone: data.phone,
+    address: data.address,
+    trainingMode: data.trainingMode,
+    startDate: data.startDate,
+    trainingDays: data.trainingDays,
+    dailyRateSnapshot: dailyRate,
+    monthlyFee: monthlyFee,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  return registration.id;
+};
+
+  
+// Make saved pricing available to the registration calculator
+window.loadPricingRates = async function() {
+  const pricingRef = doc(db, "siteSettings", "pricing");
+  const pricingSnap = await getDoc(pricingRef);
+
+  return pricingSnap.exists() ? pricingSnap.data() : null;
+};
+  window.dispatchEvent(new Event("pricing-ready"));
+
+  
+// ADMIN PRICING MANAGEMENT
+
+const pricingPanel = document.getElementById("pricingPanel");
+const pricingMessage = document.getElementById("pricingMessage");
+
+// Open pricing panel and load saved rates
+document.getElementById("managePricing").addEventListener("click", async function() {
+  if (!window.isAdminUser) return;
+
+  pricingPanel.hidden = false;
+  pricingMessage.hidden = false;
+  pricingMessage.textContent = "Loading saved pricing...";
+
+  try {
+    const pricingRef = doc(db, "siteSettings", "pricing");
+    const pricingSnap = await getDoc(pricingRef);
+
+    if (pricingSnap.exists()) {
+      const rates = pricingSnap.data();
+
+      document.getElementById("onlineDailyRate").value =
+        rates.onlinePerDay ?? "";
+
+      document.getElementById("customerVisitDailyRate").value =
+        rates.customerVisitPerDay ?? "";
+
+      document.getElementById("homeVisitDailyRate").value =
+        rates.homeVisitPerDay ?? "";
+    }
+
+    pricingMessage.textContent = "Pricing settings loaded.";
+  } catch (error) {
+    console.error("Pricing load error:", error);
+    pricingMessage.textContent = "Could not load pricing. Please try again.";
+  }
+});
+
+// Save all three daily rates
+document.getElementById("savePricing").addEventListener("click", async function() {
+  if (!window.isAdminUser) return;
+
+  const online = document.getElementById("onlineDailyRate").value;
+  const customerVisit = document.getElementById("customerVisitDailyRate").value;
+  const homeVisit = document.getElementById("homeVisitDailyRate").value;
+
+  if (online === "" || customerVisit === "" || homeVisit === "") {
+    pricingMessage.hidden = false;
+    pricingMessage.textContent = "Please enter all three daily rates.";
+    return;
+  }
+
+  const rates = [online, customerVisit, homeVisit].map(Number);
+
+  if (rates.some(rate => !Number.isFinite(rate) || rate < 0)) {
+    pricingMessage.hidden = false;
+    pricingMessage.textContent = "Please enter valid non-negative prices.";
+    return;
+  }
+
+  pricingMessage.hidden = false;
+  pricingMessage.textContent = "Saving pricing...";
+
+  try {
+    await setDoc(doc(db, "siteSettings", "pricing"), {
+      onlinePerDay: rates[0],
+      customerVisitPerDay: rates[1],
+      homeVisitPerDay: rates[2],
+      updatedAt: serverTimestamp()
+    });
+
+    pricingMessage.textContent = "Pricing saved successfully!";
+  } catch (error) {
+    console.error("Pricing save error:", error);
+    pricingMessage.textContent = "Could not save pricing. Please try again.";
+  }
+});
+
   
 document.getElementById("viewRegistrations").addEventListener("click", async function() {
   const panel = document.getElementById("adminPanelMessage");
