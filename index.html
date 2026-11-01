@@ -562,21 +562,14 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
 });
 
 
-// CUSTOMER REGISTRATION — FIRESTORE AND EMAIL WORK INDEPENDENTLY
+// CUSTOMER REGISTRATION — EMAIL ONLY
 
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
   const message = document.getElementById("registrationMessage");
-  const user = window.firebaseAuth && window.firebaseAuth.currentUser;
-
   message.hidden = false;
-
-  if (!user) {
-    message.textContent = "Please sign in before submitting your registration.";
-    document.getElementById("accountOverlay").hidden = false;
-    return;
-  }
+  message.textContent = "Preparing your registration email...";
 
   const mode = document.getElementById("trainingMode").value;
   const selectedDays = {};
@@ -601,18 +594,6 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     return;
   }
 
-  const registrationData = {
-    userId: user.uid,
-    fullName: document.getElementById("regName").value.trim(),
-    phone: document.getElementById("regPhone").value.trim(),
-    address: document.getElementById("regAddress").value.trim(),
-    trainingMode: mode,
-    startDate: document.getElementById("startDate").value,
-    trainingDays: selectedDays,
-    monthlyFee: null,
-    status: "pending"
-  };
-
   const modeLabels = {
     online: "Online coaching",
     customer_visit: "Customer visits trainer",
@@ -623,8 +604,6 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     .map(([day, time]) => day + ": " + time)
     .join(", ");
 
-  // Get the displayed pricing if it is already available.
-  // Email sending does NOT depend on a Firestore pricing read.
   let dailyRate = "Not available";
   let monthlyFee = "Not available";
 
@@ -642,21 +621,30 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     }
   }
 
-  // Start both operations independently.
-  message.textContent = "Sending your email and saving your registration...";
+  if (!window.emailjs) {
+    message.textContent = "Email service could not load. Please refresh the page and try again.";
+    return;
+  }
 
-  let emailSent = false;
-  let firestoreSaved = false;
-  let registrationId = null;
-  let emailError = null;
-  let firestoreError = null;
+  const emailData = {
+    to_email: "bjkha75@gmail.com",
+    fullName: document.getElementById("regName").value.trim(),
+    phone: document.getElementById("regPhone").value.trim(),
+    address: document.getElementById("regAddress").value.trim(),
+    trainingMode: modeLabels[mode] || mode,
+    startDate: document.getElementById("startDate").value,
+    trainingDays: trainingDaysText,
+    dailyRate: dailyRate,
+    monthlyFee: monthlyFee
+  };
 
-  // EMAIL ATTEMPT — runs independently of Firestore.
+  const submitButton = document.querySelector('#registrationForm button[type="submit"]');
+  submitButton.disabled = true;
+  submitButton.textContent = "Sending Email...";
+
+  message.textContent = "Sending your registration email...";
+
   try {
-    if (!window.emailjs) {
-      throw new Error("EmailJS library did not load.");
-    }
-
     window.emailjs.init({
       publicKey: "fBUz3U4HaiSYXSZxr"
     });
@@ -664,46 +652,11 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     await window.emailjs.send(
       "service_ezsqrmf",
       "template_2m6foc",
-      {
-        to_email: "bjkha75@gmail.com",
-        fullName: registrationData.fullName,
-        phone: registrationData.phone,
-        address: registrationData.address,
-        trainingMode: modeLabels[mode] || mode,
-        startDate: registrationData.startDate,
-        trainingDays: trainingDaysText,
-        dailyRate: dailyRate,
-        monthlyFee: monthlyFee
-      }
+      emailData
     );
 
-    emailSent = true;
-
-  } catch (error) {
-    emailError = error;
-    console.error("Email sending failed:", error);
-  }
-
-  // FIRESTORE ATTEMPT — runs separately, even if email sending failed.
-  try {
-    if (typeof window.saveRegistration !== "function") {
-      throw new Error("Firestore registration service is unavailable.");
-    }
-
-    registrationId = await window.saveRegistration(registrationData);
-    firestoreSaved = true;
-
-  } catch (error) {
-    firestoreError = error;
-    console.error("Firestore registration failed:", error);
-  }
-
-  // REPORT THE TWO RESULTS INDEPENDENTLY.
-  if (emailSent && firestoreSaved) {
     message.textContent =
-      "Success! Your registration was saved and the email notification was sent. Registration ID: " +
-      registrationId +
-      ". Your request is pending trainer confirmation.";
+      "Your registration email has been sent successfully to the trainer. Your preferred days and times are requests, not confirmed bookings.";
 
     document.getElementById("registrationForm").reset();
 
@@ -713,35 +666,20 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
       timeSelect.required = false;
     });
 
-    registrationFee.textContent =
-      "Monthly pricing will be calculated once admin pricing is configured.";
+    updateMonthlyPrice();
 
-  } else if (emailSent && !firestoreSaved) {
-    message.textContent =
-      "Email notification sent successfully to the trainer, but the registration could not be saved in the website database. Please contact the trainer directly and share your registration details. Database error: " +
-      (firestoreError.message || "Unknown error");
+  } catch (error) {
+    console.error("EmailJS sending error:", error);
 
-  } else if (!emailSent && firestoreSaved) {
-    message.textContent =
-      "Your registration was saved successfully. However, the email notification could not be sent. Registration ID: " +
-      registrationId +
-      ". Email error: " +
-      (emailError.message || "Unknown error");
+    const errorDetails = error && (error.text || error.message)
+      ? (error.text || error.message)
+      : "Please check your EmailJS settings and Email History.";
 
-    document.getElementById("registrationForm").reset();
+    message.textContent = "Email could not be sent: " + errorDetails;
 
-    document.querySelectorAll('input[name="trainingDays"]').forEach(function(checkbox) {
-      const timeSelect = document.getElementById("time" + checkbox.value);
-      timeSelect.disabled = true;
-      timeSelect.required = false;
-    });
-
-  } else {
-    message.textContent =
-      "Neither the email nor the database registration could be completed. Please try again. Email error: " +
-      (emailError ? emailError.message : "Unknown") +
-      ". Database error: " +
-      (firestoreError ? firestoreError.message : "Unknown");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit Registration";
   }
 });
 
