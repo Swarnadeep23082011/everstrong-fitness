@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +6,7 @@
 <meta name="theme-color" content="#0a0d18">
 <title>Everstrong Fitness | Build Your Strength</title>
 <meta name="description" content="Personal fitness training in Siliguri and online across India. Build strength, confidence and sustainable habits with Everstrong Fitness.">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <style>
 :root{
@@ -121,7 +121,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
  .field.full{grid-column:auto}
  h1{letter-spacing:-1.7px}
 }
-  
+
 .account-overlay{
   position:fixed;
   inset:0;
@@ -327,7 +327,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
       <select id="bmode" required><option value="">Choose a method</option><option>Home visit in Siliguri</option><option>Visit trainer's location in Siliguri</option><option>Online live video session</option><option>Online workout plan</option></select>
      </div>
      <div class="field"><label for="bdate">Preferred date</label><input id="bdate" type="date" required></div>
-     <div class="field"><label for="btime">Preferred time</label><input id="btime" type="time" required></div>
+          <div class="field"><label for="btime">Preferred time</label><input id="btime" type="time" required></div>
      <div class="field full"><label for="bmessage">Goals or questions (optional)</label><textarea id="bmessage" rows="3" placeholder="Tell us what you want help with"></textarea></div>
     </div>
     <div class="notice">This form is a visual preview and does not send or save your details yet. Please do not enter private information until secure submission is enabled.</div>
@@ -442,7 +442,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
      </select>
     </div>
 
-    
+
 <div class="notice" id="registrationFee">
   Select your training mode and preferred days to see the monthly price.
 </div>
@@ -469,7 +469,7 @@ font-size:13px;color:var(--muted);margin:17px 0}
 
 
 
-  
+
 
 <div class="page" id="admin">
   <div class="container">
@@ -560,9 +560,10 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
  document.getElementById('themeBtn').textContent=
  document.body.classList.contains('light')?'☾':'☼';
 });
-  
 
-// CUSTOMER REGISTRATION
+
+// CUSTOMER REGISTRATION — FIRESTORE AND EMAIL WORK INDEPENDENTLY
+
 document.getElementById("registrationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
@@ -573,11 +574,7 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
 
   if (!user) {
     message.textContent = "Please sign in before submitting your registration.";
-    if (typeof showAccountModal === "function") {
-      showAccountModal();
-    } else {
-      document.getElementById("accountOverlay").hidden = false;
-    }
+    document.getElementById("accountOverlay").hidden = false;
     return;
   }
 
@@ -588,23 +585,21 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     const day = checkbox.value;
     const time = document.getElementById("time" + day).value;
 
-    if (time) {
-      selectedDays[day] = time;
-    }
+    if (time) selectedDays[day] = time;
   });
+
+  const selectedCount =
+    document.querySelectorAll('input[name="trainingDays"]:checked').length;
 
   if (Object.keys(selectedDays).length === 0) {
     message.textContent = "Please select at least one training day and its preferred time.";
     return;
   }
 
-  if (Object.keys(selectedDays).length !==
-      document.querySelectorAll('input[name="trainingDays"]:checked').length) {
+  if (Object.keys(selectedDays).length !== selectedCount) {
     message.textContent = "Please select a preferred time for every selected day.";
     return;
   }
-
-  message.textContent = "Submitting your registration...";
 
   const registrationData = {
     userId: user.uid,
@@ -618,15 +613,95 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     status: "pending"
   };
 
-  try {
-    if (typeof window.saveRegistration !== "function") {
-      throw new Error("Registration service is not connected yet.");
+  const modeLabels = {
+    online: "Online coaching",
+    customer_visit: "Customer visits trainer",
+    home_visit: "Trainer visits customer"
+  };
+
+  const trainingDaysText = Object.entries(selectedDays)
+    .map(([day, time]) => day + ": " + time)
+    .join(", ");
+
+  // Get the displayed pricing if it is already available.
+  // Email sending does NOT depend on a Firestore pricing read.
+  let dailyRate = "Not available";
+  let monthlyFee = "Not available";
+
+  if (savedPricingRates) {
+    if (mode === "online") {
+      dailyRate = savedPricingRates.onlinePerDay;
+    } else if (mode === "customer_visit") {
+      dailyRate = savedPricingRates.customerVisitPerDay;
+    } else if (mode === "home_visit") {
+      dailyRate = savedPricingRates.homeVisitPerDay;
     }
 
-    const registrationId = await window.saveRegistration(registrationData);
+    if (typeof dailyRate === "number" && Number.isFinite(dailyRate)) {
+      monthlyFee = dailyRate * Object.keys(selectedDays).length * 4;
+    }
+  }
 
+  // Start both operations independently.
+  message.textContent = "Sending your email and saving your registration...";
+
+  let emailSent = false;
+  let firestoreSaved = false;
+  let registrationId = null;
+  let emailError = null;
+  let firestoreError = null;
+
+  // EMAIL ATTEMPT — runs independently of Firestore.
+  try {
+    if (!window.emailjs) {
+      throw new Error("EmailJS library did not load.");
+    }
+
+    window.emailjs.init({
+      publicKey: "fBUz3U4HaiSYXSZxr"
+    });
+
+    await window.emailjs.send(
+      "service_ezsqrmf",
+      "template_2m6foc",
+      {
+        to_email: "bjkha75@gmail.com",
+        fullName: registrationData.fullName,
+        phone: registrationData.phone,
+        address: registrationData.address,
+        trainingMode: modeLabels[mode] || mode,
+        startDate: registrationData.startDate,
+        trainingDays: trainingDaysText,
+        dailyRate: dailyRate,
+        monthlyFee: monthlyFee
+      }
+    );
+
+    emailSent = true;
+
+  } catch (error) {
+    emailError = error;
+    console.error("Email sending failed:", error);
+  }
+
+  // FIRESTORE ATTEMPT — runs separately, even if email sending failed.
+  try {
+    if (typeof window.saveRegistration !== "function") {
+      throw new Error("Firestore registration service is unavailable.");
+    }
+
+    registrationId = await window.saveRegistration(registrationData);
+    firestoreSaved = true;
+
+  } catch (error) {
+    firestoreError = error;
+    console.error("Firestore registration failed:", error);
+  }
+
+  // REPORT THE TWO RESULTS INDEPENDENTLY.
+  if (emailSent && firestoreSaved) {
     message.textContent =
-      "Registration submitted successfully! Your registration ID is: " +
+      "Success! Your registration was saved and the email notification was sent. Registration ID: " +
       registrationId +
       ". Your request is pending trainer confirmation.";
 
@@ -641,12 +716,35 @@ document.getElementById("registrationForm").addEventListener("submit", async fun
     registrationFee.textContent =
       "Monthly pricing will be calculated once admin pricing is configured.";
 
-  } catch (error) {
-  console.error("Registration error:", error);
-  message.textContent =
-    "Registration failed: " + (error.message || error.code || "Unknown error");
-}
+  } else if (emailSent && !firestoreSaved) {
+    message.textContent =
+      "Email notification sent successfully to the trainer, but the registration could not be saved in the website database. Please contact the trainer directly and share your registration details. Database error: " +
+      (firestoreError.message || "Unknown error");
+
+  } else if (!emailSent && firestoreSaved) {
+    message.textContent =
+      "Your registration was saved successfully. However, the email notification could not be sent. Registration ID: " +
+      registrationId +
+      ". Email error: " +
+      (emailError.message || "Unknown error");
+
+    document.getElementById("registrationForm").reset();
+
+    document.querySelectorAll('input[name="trainingDays"]').forEach(function(checkbox) {
+      const timeSelect = document.getElementById("time" + checkbox.value);
+      timeSelect.disabled = true;
+      timeSelect.required = false;
+    });
+
+  } else {
+    message.textContent =
+      "Neither the email nor the database registration could be completed. Please try again. Email error: " +
+      (emailError ? emailError.message : "Unknown") +
+      ". Database error: " +
+      (firestoreError ? firestoreError.message : "Unknown");
+  }
 });
+
 
 // EXISTING BOOKING PREVIEW
 document.getElementById("bookingForm").addEventListener("submit", function(e) {
@@ -784,7 +882,7 @@ if (typeof window.loadPricingRates === "function") {
 
 route();
 </script>
-  
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -810,7 +908,7 @@ import {
   messagingSenderId: "529544810195",
   appId: "1:529544810195:web:531f53b1fb4c36758e0e26"
 };
-  
+
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -886,7 +984,7 @@ window.saveRegistration = async function(data) {
   return registration.id;
 };
 
-  
+
 // Make saved pricing available to the registration calculator
 window.loadPricingRates = async function() {
   const pricingRef = doc(db, "siteSettings", "pricing");
@@ -896,7 +994,7 @@ window.loadPricingRates = async function() {
 };
   window.dispatchEvent(new Event("pricing-ready"));
 
-  
+
 // ADMIN PRICING MANAGEMENT
 
 const pricingPanel = document.getElementById("pricingPanel");
@@ -933,8 +1031,7 @@ document.getElementById("managePricing").addEventListener("click", async functio
     pricingMessage.textContent = "Could not load pricing. Please try again.";
   }
 });
-
-// Save all three daily rates
+  // Save all three daily rates
 document.getElementById("savePricing").addEventListener("click", async function() {
   if (!window.isAdminUser) return;
 
@@ -974,7 +1071,7 @@ document.getElementById("savePricing").addEventListener("click", async function(
   }
 });
 
-  
+
 document.getElementById("viewRegistrations").addEventListener("click", async function() {
   const panel = document.getElementById("adminPanelMessage");
 
@@ -1217,4 +1314,3 @@ document.getElementById("viewRegistrations").addEventListener("click", async fun
 
 </body>
 </html>
-
